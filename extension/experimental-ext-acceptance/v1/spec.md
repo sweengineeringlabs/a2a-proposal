@@ -98,7 +98,18 @@ never silently change a task's lifecycle for an agent that cannot honor them.
 - If a client requests a version the agent does not support, the agent **SHOULD**
   ignore the activation request and **MUST NOT** fall back to a different version.
 
-## 4. Data: `AcceptanceCriteria`
+## 4. Data
+
+This extension defines three metadata keys, all namespaced under `{EXT}`, and has
+**no dependencies** on other extensions:
+
+| Key | On object | Carries |
+|---|---|---|
+| `{EXT}/criteria` | `Task` / creating `Message` | the `AcceptanceCriteria` object (§4.1) |
+| `{EXT}/pendingAcceptance` | `TaskStatus.message` | the pending-acceptance flag (§5.1) |
+| `{EXT}/decision` | accept/reject `Message` | the accept/reject `decision` object (§5.2) |
+
+### 4.1 `AcceptanceCriteria`
 
 Carried in `Task.metadata` (or supplied on the creating `Message.metadata`), keyed
 by `{EXT}/criteria`:
@@ -123,7 +134,7 @@ by `{EXT}/criteria`:
 | `description` | string | Human/LLM-interpretable success condition. |
 | `artifactSchema` | object (JSON Schema) | Schema that `application/json` artifact parts **MUST** validate against. |
 | `requiredArtifacts` | string[] | `Artifact.name` values that **MUST** be present. |
-| `evaluator` | enum: `client` \| `agent` \| `human` | Who gates completion (see §4.1). Default `client`. |
+| `evaluator` | enum: `client` \| `agent` \| `human` | Who gates completion (see §4.2). Default `client`. |
 | `acceptanceTimeoutSeconds` | int | Max time in pending-acceptance before the agent transitions the task to `failed`. Omit = the server's implementation-defined default (finite; see §11), not unbounded. |
 | `maxRejections` | int | Max reject→retry cycles before `failed`. Omit = the server's implementation-defined default (finite; see §11), not unbounded. |
 
@@ -138,7 +149,7 @@ by `{EXT}/criteria`:
 > equivalent enum constants (`TASK_STATE_INPUT_REQUIRED`, etc.). No new constant is
 > added on any transport.
 
-### 4.1 The `evaluator` field
+### 4.2 The `evaluator` field
 
 `evaluator` means strictly *who issues the accept/reject signal*:
 
@@ -148,6 +159,11 @@ by `{EXT}/criteria`:
 - `agent` — the agent self-evaluates. **In this mode the agent does NOT enter
   pending-acceptance**; it either reaches `completed` (self-check passed) or `failed`
   with `AcceptanceCriteriaNotMet`.
+
+On the wire, `client` and `human` are identical — both resolve via a `{EXT}/decision`
+message from the client. The distinction is informational: it signals whether a human
+is in the loop, which MAY affect timeout defaults and how the client surfaces the
+task for review. Agents **MUST NOT** rely on it for access control (see §11).
 
 ## 5. Lifecycle and the accept/reject flow
 
@@ -203,19 +219,37 @@ performs the state transition.**
 ```
 
 **Reject** → agent injects the feedback into history and resumes (→ `working`), or
-goes `failed` if `maxRejections` is exceeded:
+goes `failed` if `maxRejections` is exceeded. Like accept, it is a full
+`message/send`; the feedback text rides in `parts`:
 
 ```json
 {
-  "metadata": {
-    "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1/decision": {
-      "action": "reject",
-      "reason": "SCHEMA_MISMATCH",
-      "retry": true
+  "method": "message/send",
+  "params": {
+    "message": {
+      "taskId": "t-123", "contextId": "c-9",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "Total is negative; recompute the tax line." }],
+      "extensions": ["https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1"],
+      "metadata": {
+        "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1/decision": {
+          "action": "reject",
+          "reason": "SCHEMA_MISMATCH",
+          "retry": true
+        }
+      }
     }
   }
 }
 ```
+
+The `{EXT}/decision` object:
+
+| Field | Type | Applies to | Meaning |
+|---|---|---|---|
+| `action` | enum: `accept` \| `reject` | both | Whether the task is accepted or rejected. **REQUIRED.** |
+| `reason` | enum (see §5.4) | reject | Machine-readable rejection code. **REQUIRED** on reject. |
+| `retry` | bool | reject | `true` → task re-enters `working` for another attempt; `false` → task goes directly to `failed`. Default `true`. |
 
 The feedback `parts` of the same message become part of the task's message history
 verbatim — the structured-feedback-injection mechanism, reusing how A2A already
@@ -289,6 +323,10 @@ Non-activating clients never observe the `pendingAcceptance` flag and see ordina
    and inherited? (Per-context is a v2 candidate — would warrant a new URI.)
 4. **Anchor state:** is `input-required` the right anchor, or should pending-
    acceptance annotate `working`?
+5. **Non-decision messages during pending-acceptance:** how should an agent treat a
+   `message/send` to a pending-acceptance task that carries no `{EXT}/decision` (e.g.
+   a freeform human comment)? (Proposed default: treat it as a no-op that leaves the
+   task pending, rather than an implicit accept or resume.)
 
 ## 10. Spec conformance (verified)
 
