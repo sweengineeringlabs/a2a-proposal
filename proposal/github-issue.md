@@ -35,6 +35,8 @@ A negotiated extension that standardizes completion gating with **zero core-prot
 2. `INPUT_REQUIRED` already means "agent needs more input to proceed"; reusing it for "done, awaiting your verdict" without a standardized flag is ambiguous to any client that didn't author the convention, and core offers no way to carry the verdict (accept vs. reject-with-reason) back.
 3. Core defines no schema for success criteria nor a closed set of rejection reasons, so unstructured `metadata` alone can't deliver interoperability.
 
+And it should be a *published* extension, not private metadata: acceptance gating is a cross-vendor handshake, so without one shared, registered schema every client/agent pair must agree bilaterally — the fragmentation A2A exists to prevent.
+
 ## Alternatives considered
 
 - **Core-protocol change** (new `PENDING_ACCEPTANCE` state + `AcceptTask`/`RejectTask` RPCs): rejected — extensions explicitly **MUST NOT** add enum values or core fields, and the need is opt-in, not universal.
