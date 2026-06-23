@@ -22,9 +22,12 @@ a Maintainer sponsors it.
 
 ## Status
 
-Pre-submission draft. Open items before this is a real extension:
+**Submitted** — Proposal Phase issue filed at
+[a2aproject/A2A#1976](https://github.com/a2aproject/A2A/issues/1976) (open).
 
-1. File the [GitHub issue](./proposal/github-issue.md) and secure a **Maintainer sponsor**
-   (prerequisite for an `experimental-ext-*` repo — the author cannot create it).
+Follow-up / open items:
+
+1. Engage in the issue discussion and secure a **Maintainer sponsor** (prerequisite
+   for an `experimental-ext-*` repo — the author cannot create it).
 2. Build the **reference implementation** in `sample/` (required for experimental →
    official graduation).

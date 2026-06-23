@@ -1,7 +1,7 @@
 # Proposal: Acceptance Criteria Extension for A2A
 
 - **Author:** Amu Hlongwane (Software Engineering Labs)
-- **Status:** Draft proposal (pre-submission)
+- **Status:** Submitted — [a2aproject/A2A#1976](https://github.com/a2aproject/A2A/issues/1976) (Proposal Phase, open)
 - **Target:** `a2aproject/A2A` — extension Proposal Phase
 - **Specification:** [`../extension/experimental-ext-acceptance/v1/spec.md`](../extension/experimental-ext-acceptance/v1/spec.md)
 
