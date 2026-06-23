@@ -12,6 +12,8 @@
 
 ---
 
+**Proposed by:** Amu Hlongwane (Software Engineering Labs)
+
 ## Is your feature request related to a problem? Please describe.
 
 In core A2A, `COMPLETED` means "the agent stopped working," not "the output meets
