@@ -1,0 +1,160 @@
+diff --git a/specification/a2a.proto b/specification/a2a.proto
+--- a/specification/a2a.proto
++++ b/specification/a2a.proto
+
+@@ -service A2AService @@
+   // Deletes a push notification config for a task.
+   rpc DeleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigRequest) returns (google.protobuf.Empty) {
+     option (google.api.http) = {
+       delete: "/tasks/{task_id=*}/pushNotificationConfigs/{id=*}"
+       additional_bindings: {
+         delete: "/{tenant}/tasks/{task_id=*}/pushNotificationConfigs/{id=*}"
+       }
+     };
+     option (google.api.method_signature) = "task_id,id";
+   }
++
++  // Accepts a task in PENDING_ACCEPTANCE state, transitioning it to COMPLETED.
++  rpc AcceptTask(AcceptTaskRequest) returns (Task) {
++    option (google.api.http) = {
++      post: "/tasks/{id=*}:accept"
++      body: "*"
++      additional_bindings: {
++        post: "/{tenant}/tasks/{id=*}:accept"
++        body: "*"
++      }
++    };
++    option (google.api.method_signature) = "id";
++  }
++
++  // Rejects a task in PENDING_ACCEPTANCE state, transitioning it back to
++  // WORKING (with feedback injected into history) or to FAILED if
++  // max_rejections is exceeded.
++  rpc RejectTask(RejectTaskRequest) returns (Task) {
++    option (google.api.http) = {
++      post: "/tasks/{id=*}:reject"
++      body: "*"
++      additional_bindings: {
++        post: "/{tenant}/tasks/{id=*}:reject"
++        body: "*"
++      }
++    };
++    option (google.api.method_signature) = "id";
++  }
+ }
+
+@@ -message SendMessageConfiguration @@
+   // If `true`, the operation returns immediately after creating the task,
+   // even if processing is still in progress.
+   // If `false` (default), the operation MUST wait until the task reaches a
+   // terminal (`COMPLETED`, `FAILED`, `CANCELED`, `REJECTED`) or interrupted
+   // (`INPUT_REQUIRED`, `AUTH_REQUIRED`) state before returning.
+   bool return_immediately = 4;
++  // Optional. Acceptance criteria for the task created or updated by this
++  // message. Stored on the Task and governs its lifecycle after the agent
++  // finishes working.
++  AcceptanceCriteria acceptance_criteria = 5;
+ }
+
+@@ -message Task @@
+   // A key/value object to store custom metadata about a task.
+   google.protobuf.Struct metadata = 6;
++  // Optional. Acceptance criteria declared by the client at task creation.
++  // When present, the task transitions to PENDING_ACCEPTANCE after the agent
++  // completes work, awaiting an explicit AcceptTask or RejectTask call.
++  AcceptanceCriteria acceptance_criteria = 7;
+ }
+
+@@ -enum TaskState @@
+   // Indicates that authentication is required to proceed. This is an interrupted state.
+   TASK_STATE_AUTH_REQUIRED = 8;
++  // Indicates that the task has produced output and is awaiting explicit
++  // acceptance or rejection. Like INPUT_REQUIRED and AUTH_REQUIRED, this is
++  // an interrupted state — the task will not transition to COMPLETED until
++  // AcceptTask is called, or to FAILED if max_rejections is exceeded.
++  TASK_STATE_PENDING_ACCEPTANCE = 9;
+ }
+
+@@ -message AgentCapabilities @@
+   // Indicates if the agent supports providing an extended agent card when authenticated.
+   optional bool extended_agent_card = 4;
++  // Indicates if the agent supports AcceptanceCriteria, the PENDING_ACCEPTANCE
++  // task state, and the AcceptTask/RejectTask operations.
++  optional bool acceptance_criteria = 5;
+ }
+
+@@ -new types, insert after AgentCapabilities @@
++
++// Defines who is responsible for evaluating task acceptance criteria.
++enum AcceptanceEvaluator {
++  ACCEPTANCE_EVALUATOR_UNSPECIFIED = 0;
++  // The client (orchestrator) evaluates the artifact programmatically and
++  // calls AcceptTask or RejectTask based on its own validation logic.
++  ACCEPTANCE_EVALUATOR_CLIENT = 1;
++  // The agent self-evaluates before transitioning to PENDING_ACCEPTANCE.
++  // If the agent determines the output cannot meet the criteria, it MUST
++  // return AcceptanceCriteriaNotMetError rather than loop indefinitely.
++  ACCEPTANCE_EVALUATOR_AGENT = 2;
++  // A human reviewer must explicitly call AcceptTask or RejectTask.
++  // The task remains in PENDING_ACCEPTANCE until a human acts or
++  // acceptance_timeout_seconds elapses.
++  ACCEPTANCE_EVALUATOR_HUMAN = 3;
++}
++
++// Declares success conditions that must be satisfied before a task is
++// marked COMPLETED. When present on a Task, the agent transitions to
++// PENDING_ACCEPTANCE after finishing work rather than directly to COMPLETED.
++message AcceptanceCriteria {
++  // Human-readable or LLM-interpretable description of what constitutes a
++  // successful output. Agents with evaluator=AGENT SHOULD use this to
++  // self-assess their output before surfacing it.
++  optional string description = 1;
++  // A JSON Schema (serialized as a google.protobuf.Struct) that all artifact
++  // Parts of media_type "application/json" must validate against.
++  // Used for automated structural validation of task output.
++  optional google.protobuf.Struct artifact_schema = 2;
++  // Names of artifacts (Artifact.name) that MUST be present in the task
++  // output for the criteria to be considered satisfied.
++  repeated string required_artifacts = 3;
++  // Specifies who is responsible for evaluating the criteria and calling
++  // AcceptTask or RejectTask. Defaults to CLIENT if unset.
++  AcceptanceEvaluator evaluator = 4;
++  // Maximum seconds to wait in PENDING_ACCEPTANCE before auto-transitioning
++  // to FAILED. Unset means no timeout is enforced by the server.
++  optional int32 acceptance_timeout_seconds = 5;
++  // Maximum number of RejectTask → WORKING cycles before the task
++  // auto-transitions to FAILED. Unset means no limit is enforced.
++  optional int32 max_rejections = 6;
++}
+
+@@ -new request messages, insert before StreamResponse @@
++
++// Represents a request for the `AcceptTask` method.
++message AcceptTaskRequest {
++  // Optional. Opaque routing identifier. Must match the `tenant` value from
++  // the selected `AgentInterface` in the Agent Card when that field is set.
++  string tenant = 1;
++  // The resource ID of the task to accept.
++  string id = 2 [(google.api.field_behavior) = REQUIRED];
++  // Optional. An acceptance note stored in the task's message history.
++  Message message = 3;
++  // A flexible key-value map for passing additional context.
++  google.protobuf.Struct metadata = 4;
++}
++
++// Represents a request for the `RejectTask` method.
++message RejectTaskRequest {
++  // Optional. Opaque routing identifier. Must match the `tenant` value from
++  // the selected `AgentInterface` in the Agent Card when that field is set.
++  string tenant = 1;
++  // The resource ID of the task to reject.
++  string id = 2 [(google.api.field_behavior) = REQUIRED];
++  // A machine-readable code describing why the output was rejected.
++  // Example values: "schema_mismatch", "missing_artifact", "quality_threshold_not_met"
++  string reason = 3 [(google.api.field_behavior) = REQUIRED];
++  // Optional. Structured feedback injected into the task's message history
++  // so the agent can use it to improve its next attempt.
++  Message message = 4;
++  // A flexible key-value map for passing additional context.
++  google.protobuf.Struct metadata = 5;
++}
