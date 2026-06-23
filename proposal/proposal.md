@@ -29,7 +29,26 @@ continuity. Because every team invents its own convention, an orchestrator from 
 vendor and an agent from another cannot interoperate on approval gating — the exact
 fragmentation A2A exists to prevent.
 
-## 2. Why an extension, and why not core
+## 2. Proposed solution
+
+A negotiated extension that standardizes completion gating with **no core-protocol
+changes**. In outline — full normative detail is in the
+[specification](../extension/experimental-ext-acceptance/v1/spec.md):
+
+- **Declaration:** agents advertise support via an `AgentExtension` entry in
+  `AgentCapabilities.extensions[]`.
+- **Activation:** per-request via the `A2A-Extensions` header; non-activating clients
+  see ordinary `WORKING → COMPLETED`.
+- **Criteria:** an `AcceptanceCriteria` object (success description, optional JSON
+  `artifactSchema`, required artifacts, evaluator, timeout, max-rejections) carried in
+  `Task.metadata`.
+- **Pending-acceptance:** the existing `input-required` state plus a metadata flag —
+  no new `TaskState`.
+- **Accept / reject:** ordinary `message/send` calls carrying a `decision` (`accept`,
+  or `reject` with a closed-enum `reason` + feedback); the agent performs the
+  transition.
+
+## 3. Why an extension, and why not core
 
 The capability is opt-in — most tasks never want a gate — and by A2A's own rules it
 cannot go in core: extensions **MUST NOT** add enum values or core fields
@@ -47,7 +66,7 @@ semantics to express this on its own:
 3. **No shared vocabulary** for success criteria or rejection reasons, so unstructured
    `metadata` alone cannot deliver interoperability.
 
-## 3. Why a *published* extension, not an ad-hoc convention
+## 4. Why a *published* extension, not an ad-hoc convention
 
 The sharpest challenge is not "extension vs. core" — it is "why a **registered,
 published** extension, when any team can park a task in `input-required` and use
@@ -73,7 +92,7 @@ across a trust or vendor boundary**, the class of thing A2A exists to standardiz
   A registered extension also ships one reference schema and implementation, so
   independent implementations interoperate without ever talking to each other.
 
-## 4. Alternatives considered
+## 5. Alternatives considered
 
 - **Core-protocol change** (new `PENDING_ACCEPTANCE` state + `AcceptTask`/`RejectTask`
   RPCs): rejected — extensions explicitly **MUST NOT** add enum values or core
@@ -84,7 +103,7 @@ across a trust or vendor boundary**, the class of thing A2A exists to standardiz
 - **Client opens a new task on dissatisfaction** (status quo): loses `contextId`
   continuity and forces full re-description; no standard feedback channel.
 
-## 5. What is being requested
+## 6. What is being requested
 
 - **Scope:** incubate as `experimental-ext-acceptance` under `a2aproject`.
 - **Ask:** community feedback, and a **Maintainer sponsor** to proceed to
@@ -93,7 +112,7 @@ across a trust or vendor boundary**, the class of thing A2A exists to standardiz
   (mock agent that parks in `input-required` with the pending flag + a client that
   sends accept/reject decisions) and interop tests. License: Apache-2.0.
 
-## 6. Open questions
+## 7. Open questions
 
 1. Is `input-required` the right anchor state, or should pending-acceptance annotate
    `working`?
