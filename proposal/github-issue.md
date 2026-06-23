@@ -25,17 +25,17 @@ A negotiated extension that standardizes completion gating with **zero core-prot
 
 - **Declaration:** agents advertise support via an `AgentExtension` entry in `AgentCapabilities.extensions[]`; `params` declares supported evaluator modes.
 - **Activation:** per-request via the `A2A-Extensions` header; the agent echoes the URI to confirm. Non-activating clients see ordinary `WORKING → COMPLETED`.
-- **Criteria (data):** an `AcceptanceCriteria` object (description, optional JSON `artifactSchema`, `requiredArtifacts`, `evaluator`, timeout, max-rejections) carried in `Task.metadata`, keyed by the extension URI.
+- **Criteria (data):** an `AcceptanceCriteria` object (description, optional JSON `artifactSchema`, `requiredArtifacts`, `evaluator`, timeout, max-rejections) carried in `Task`/`Message` `metadata`, keyed by the extension URI.
 - **Pending-acceptance (state machine):** modeled as the existing `input-required` state **plus a metadata flag** — following A2A's documented "annotate, don't add enum values" rule. **No new `TaskState` value.**
 - **Accept / reject (flow):** ordinary `message/send` calls carrying a `decision` payload (`accept`, or `reject` with a closed-enum `reason` + feedback). The agent — not the client — performs the resulting transition. Reject re-enters `WORKING` with feedback in history, or `FAILED` past `maxRejections`.
 
 ## Why this can't be done in core today
 
 1. Core has no completion-gate semantics, and extensions **MUST NOT** add new enum values or new core fields — so the condition can only be expressed as an annotation on an existing state.
-2. `INPUT_REQUIRED` already means "agent needs more input to proceed"; reusing it for "done, awaiting your verdict" without a standardized flag is ambiguous to any client that didn't author the convention, and core offers no way to carry the verdict (accept vs. reject-with-reason) back.
+2. `INPUT_REQUIRED` already means "agent needs more input to proceed"; reusing it for "done, awaiting your verdict" without a standardized flag is ambiguous to any client that didn't author the convention, and core has no standard, machine-readable way to carry the verdict (accept vs. reject-with-reason) back.
 3. Core defines no schema for success criteria nor a closed set of rejection reasons, so unstructured `metadata` alone can't deliver interoperability.
 
-And it should be a *published* extension, not private metadata: acceptance gating is a cross-vendor handshake, so without one shared, registered schema every client/agent pair must agree bilaterally — the fragmentation A2A exists to prevent.
+And it should be a *published* extension, not private metadata: acceptance gating is a cross-vendor handshake, so without one shared, registered schema every client/agent pair must agree bilaterally instead of converging on a single vocabulary.
 
 ## Alternatives considered
 
