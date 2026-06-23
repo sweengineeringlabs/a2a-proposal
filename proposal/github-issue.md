@@ -2,9 +2,11 @@
 
 > Per the [Extension and Binding Governance](https://github.com/a2aproject/A2A/blob/main/docs/topics/extension-and-binding-governance.md)
 > "Proposal Phase," this is an **extension proposal**, not a core-spec change.
-> Headings below map to the repo's Feature Request template. Full rationale:
-> [`proposal.md`](./proposal.md). Full spec:
-> [`../extension/experimental-ext-acceptance/v1/spec.md`](../extension/experimental-ext-acceptance/v1/spec.md).
+> Headings below map to the repo's Feature Request template.
+>
+> Repository: https://github.com/sweengineeringlabs/a2a-proposal
+> Full rationale: [proposal](https://github.com/sweengineeringlabs/a2a-proposal/blob/main/proposal/proposal.md).
+> Full specification: [v1/spec.md](https://github.com/sweengineeringlabs/a2a-proposal/blob/main/extension/experimental-ext-acceptance/v1/spec.md).
 
 **Title:** `[Feat]: Extension proposal — Acceptance Criteria (completion gating with accept/reject)`
 
