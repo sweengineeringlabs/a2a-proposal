@@ -29,25 +29,22 @@
 
 ## Abstract
 
-In core A2A, `COMPLETED` means "the agent stopped working," not "the output meets
-the requester's intent." This extension adds a negotiated **acceptance gate**: a
-client may declare success criteria up front, the agent parks finished output in a
-**pending-acceptance** condition, and an authorized client or human **accepts**
-(→ `COMPLETED`) or **rejects** with structured feedback (→ `WORKING`, same task) —
-preserving `contextId` and history instead of opening a new task.
-
-It does so with **no core-protocol changes**: no new `TaskState` value, no new
-`Task`/`AgentCapabilities` fields, and no new core RPCs. The capability is layered
-entirely through the extension mechanism (declaration, activation, `metadata`).
+This extension adds a negotiated **acceptance gate** to A2A: a client declares
+success criteria for a task, the agent parks finished output in a
+**pending-acceptance** condition, and an authorized client or human **accepts** it
+(→ `COMPLETED`) or **rejects** it with structured feedback (→ `WORKING`, same task,
+preserving `contextId` and history). It is layered entirely through the extension
+mechanism, with **no core-protocol changes**: no new `TaskState` value, no new
+`Task`/`AgentCapabilities` fields, no new core RPCs.
 
 ## 1. Problem
 
-A2A has no negotiated, interoperable way to (a) declare what "done" looks like
-before work starts, (b) gate completion on explicit client or human approval, or
-(c) reject output with structured feedback and retry the *same* task. The status
-quo — orchestrators validating out-of-band and opening a fresh task on
-dissatisfaction — loses task context and forces every vendor to invent its own
-convention, which does not interoperate across a client/agent trust boundary.
+Core A2A's `COMPLETED` means "the agent stopped," not "the output is acceptable,"
+and offers no standard way to gate completion or to reject output with feedback and
+retry the same task. Teams work around this out-of-band — validating artifacts
+themselves and opening a fresh task when dissatisfied — which loses context and,
+because every vendor invents its own convention, does not interoperate across a
+client/agent boundary.
 
 ## 2. Declaration (Agent Card)
 

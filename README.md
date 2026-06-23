@@ -16,13 +16,9 @@ with no core-protocol changes.
 | [`guides/`](./guides/) | A2A's own authoring docs ([extensions](./guides/extensions.md), [governance](./guides/extension-and-binding-governance.md)). |
 | [`archive/`](./archive/) | The original core-change draft ([proposal](./archive/original-proposal.md), [diff](./archive/original-proposal.diff)), superseded. |
 
-## How the pieces relate
-
-- The **proposal** argues the case and links to the **spec**; the **spec** is purely
-  normative and links back to the proposal for rationale.
-- The **extension package** mirrors the directory layout of a future
-  `a2aproject/experimental-ext-acceptance` repository (per the `experimental-ext-oid4vp-auth`
-  precedent), so it can be lifted out wholesale once a Maintainer sponsors it.
+The `extension/` package mirrors the layout of a future
+`a2aproject/experimental-ext-acceptance` repo, so it can be lifted out wholesale once
+a Maintainer sponsors it.
 
 ## Status
 

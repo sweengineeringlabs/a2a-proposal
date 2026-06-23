@@ -29,38 +29,25 @@ continuity. Because every team invents its own convention, an orchestrator from 
 vendor and an agent from another cannot interoperate on approval gating — the exact
 fragmentation A2A exists to prevent.
 
-## 2. Why an extension, not a core change
+## 2. Why an extension, and why not core
 
-A2A's extension guidance defines four extension types; this capability uses three
-(Data, State Machine, Profile) and touches no core enum or message. Two hard rules
-in [`guides/extensions.md`](../guides/extensions.md) make the core route
-inadmissible anyway:
+The capability is opt-in — most tasks never want a gate — and by A2A's own rules it
+cannot go in core: extensions **MUST NOT** add enum values or core fields
+([`guides/extensions.md`](../guides/extensions.md)), so a `PENDING_ACCEPTANCE` state
+or a `Task.acceptance_criteria` field is disallowed. The condition can only be an
+annotation on an existing state, carried in `metadata`. Core also lacks the
+semantics to express this on its own:
 
-- Extensions **MUST NOT add new values to enum types** — so a new
-  `PENDING_ACCEPTANCE` `TaskState` is disallowed; the condition must be an
-  annotation on an existing state.
-- Extensions **MUST NOT change core data structures** (no new fields) — so
-  `AcceptanceCriteria` must ride in the existing `metadata` maps, not a new `Task`
-  field.
+1. **No completion gate.** `COMPLETED` is terminal and set unilaterally by the agent;
+   no core state/field/method means "output produced, awaiting an external decision."
+2. **`INPUT_REQUIRED` is overloaded.** It means "agent needs more input to proceed";
+   reusing it for "done, awaiting your verdict" without a standard flag is ambiguous
+   to any client that did not author the convention, and core cannot carry the
+   verdict back.
+3. **No shared vocabulary** for success criteria or rejection reasons, so unstructured
+   `metadata` alone cannot deliver interoperability.
 
-The need is also opt-in, not universal: most tasks never want a gate. That is the
-textbook profile for an extension, not a core feature.
-
-## 3. Why the core protocol cannot already express this
-
-Governance requires stating why core cannot do this. It cannot, on three counts:
-
-1. **No completion-gate semantics.** Core goes `WORKING → COMPLETED`; `COMPLETED` is
-   terminal and set unilaterally by the agent. No core state/field/method means
-   "output produced, awaiting an external accept/reject decision."
-2. **`INPUT_REQUIRED` is overloaded.** It already means "the agent needs more input
-   to proceed." Reusing it for "done, awaiting your verdict" without a standardized
-   flag is indistinguishable to any client that did not author the convention — and
-   core offers no way to carry the verdict (accept vs. reject-with-reason) back.
-3. **No core vocabulary** for success criteria or a closed set of rejection reasons.
-   Unstructured `metadata` alone cannot deliver interoperability.
-
-## 4. Why a *published* extension, not an ad-hoc convention
+## 3. Why a *published* extension, not an ad-hoc convention
 
 The sharpest challenge is not "extension vs. core" — it is "why a **registered,
 published** extension, when any team can park a task in `input-required` and use
@@ -86,7 +73,7 @@ across a trust or vendor boundary**, the class of thing A2A exists to standardiz
   A registered extension also ships one reference schema and implementation, so
   independent implementations interoperate without ever talking to each other.
 
-## 5. Alternatives considered
+## 4. Alternatives considered
 
 - **Core-protocol change** (new `PENDING_ACCEPTANCE` state + `AcceptTask`/`RejectTask`
   RPCs): rejected — extensions explicitly **MUST NOT** add enum values or core
@@ -97,7 +84,7 @@ across a trust or vendor boundary**, the class of thing A2A exists to standardiz
 - **Client opens a new task on dissatisfaction** (status quo): loses `contextId`
   continuity and forces full re-description; no standard feedback channel.
 
-## 6. What is being requested
+## 5. What is being requested
 
 - **Scope:** incubate as `experimental-ext-acceptance` under `a2aproject`.
 - **Ask:** community feedback, and a **Maintainer sponsor** to proceed to
@@ -106,7 +93,7 @@ across a trust or vendor boundary**, the class of thing A2A exists to standardiz
   (mock agent that parks in `input-required` with the pending flag + a client that
   sends accept/reject decisions) and interop tests. License: Apache-2.0.
 
-## 7. Open questions
+## 6. Open questions
 
 1. Is `input-required` the right anchor state, or should pending-acceptance annotate
    `working`?

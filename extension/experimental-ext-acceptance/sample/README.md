@@ -16,7 +16,7 @@ to official status (per A2A governance).
 - **Interop test** — asserts: (1) a non-activating client sees ordinary
   `WORKING → COMPLETED`; (2) accept → `COMPLETED`; (3) reject(retry) → `WORKING`
   with feedback in history; (4) reject past `maxRejections` → `FAILED`;
-  (5) unauthorized accept is refused (§13).
+  (5) unauthorized accept is refused (spec §11).
 
 ## Status
 
