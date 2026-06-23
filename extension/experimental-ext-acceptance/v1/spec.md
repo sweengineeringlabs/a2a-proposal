@@ -1,9 +1,11 @@
 # A2A Protocol Extension: Acceptance Criteria (v1 Draft)
 
-- **URI:** `https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1`
-  _(provisional — the canonical URI is assigned when an A2A Maintainer sponsors the
-  repository; while experimental, the GitHub tree URL serves as the identifier, per
-  the precedent set by `experimental-ext-oid4vp-auth`)._
+- **URI:** `https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1`
+  _(provisional draft identifier, resolvable at the staging repository. On Maintainer
+  sponsorship the extension moves under `a2aproject` and the canonical URI is
+  reassigned — a relocation that, per §3.1, warrants a fresh URI. Using the live
+  draft location as the interim identifier follows the `experimental-ext-oid4vp-auth`
+  precedent.)_
 - **Type:** Profile + State Machine + Data Extension
 - **Version:** 1.0.0 (Draft)
 - **Status:** Experimental (proposed)
@@ -57,7 +59,7 @@ A supporting agent advertises the extension inside its existing
   "capabilities": {
     "extensions": [
       {
-        "uri": "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1",
+        "uri": "https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1",
         "description": "Supports declared acceptance criteria, a pending-acceptance gate, and accept/reject with feedback before COMPLETED.",
         "required": false,
         "params": {
@@ -80,7 +82,7 @@ A client that wants the behavior **MUST** activate it on the request that create
 the task by including the extension URI in the `A2A-Extensions` header:
 
 ```
-A2A-Extensions: https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1
+A2A-Extensions: https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1
 ```
 
 An agent that activates the extension **MUST** echo the URI in the response
@@ -117,7 +119,7 @@ by `{EXT}/criteria`:
 ```json
 {
   "metadata": {
-    "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1/criteria": {
+    "https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1/criteria": {
       "description": "Valid JSON invoice matching the schema; total > 0.",
       "artifactSchema": { "...": "JSON Schema object" },
       "requiredArtifacts": ["invoice.json"],
@@ -178,9 +180,9 @@ in the existing `input-required` state and flags it:
   "status": {
     "state": "input-required",
     "message": {
-      "extensions": ["https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1"],
+      "extensions": ["https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1"],
       "metadata": {
-        "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1/pendingAcceptance": true
+        "https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1/pendingAcceptance": true
       }
     }
   }
@@ -209,9 +211,9 @@ performs the state transition.**
       "taskId": "t-123", "contextId": "c-9",
       "role": "user",
       "parts": [{ "kind": "text", "text": "Approved." }],
-      "extensions": ["https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1"],
+      "extensions": ["https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1"],
       "metadata": {
-        "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1/decision": { "action": "accept" }
+        "https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1/decision": { "action": "accept" }
       }
     }
   }
@@ -230,9 +232,9 @@ goes `failed` if `maxRejections` is exceeded. Like accept, it is a full
       "taskId": "t-123", "contextId": "c-9",
       "role": "user",
       "parts": [{ "kind": "text", "text": "Total is negative; recompute the tax line." }],
-      "extensions": ["https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1"],
+      "extensions": ["https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1"],
       "metadata": {
-        "https://github.com/a2aproject/experimental-ext-acceptance/tree/main/v1/decision": {
+        "https://github.com/sweengineeringlabs/a2a-proposal/tree/main/extension/experimental-ext-acceptance/v1/decision": {
           "action": "reject",
           "reason": "SCHEMA_MISMATCH",
           "retry": true
