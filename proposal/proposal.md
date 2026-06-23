@@ -1,9 +1,9 @@
 # Proposal: Acceptance Criteria Extension for A2A
 
-**Author:** Amu Hlongwane (Software Engineering Labs)
-**Status:** Draft proposal (pre-submission)
-**Target:** `a2aproject/A2A` — extension Proposal Phase
-**Specification:** [`../extension/experimental-ext-acceptance/v1/spec.md`](../extension/experimental-ext-acceptance/v1/spec.md)
+- **Author:** Amu Hlongwane (Software Engineering Labs)
+- **Status:** Draft proposal (pre-submission)
+- **Target:** `a2aproject/A2A` — extension Proposal Phase
+- **Specification:** [`../extension/experimental-ext-acceptance/v1/spec.md`](../extension/experimental-ext-acceptance/v1/spec.md)
 
 > This document is the **proposal** — it argues *why* the capability should exist
 > and *why* it belongs in an extension. The normative *how* lives entirely in the

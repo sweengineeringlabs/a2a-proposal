@@ -2,10 +2,10 @@
 
 ---
 
-**Proposed by:** Amu Hlongwane (Software Engineering Labs)
-**Repository:** https://github.com/sweengineeringlabs/a2a-proposal
-**Full spec:** https://github.com/sweengineeringlabs/a2a-proposal/blob/main/extension/experimental-ext-acceptance/v1/spec.md
-**Rationale:** https://github.com/sweengineeringlabs/a2a-proposal/blob/main/proposal/proposal.md
+- **Proposed by:** Amu Hlongwane (Software Engineering Labs)
+- **Repository:** https://github.com/sweengineeringlabs/a2a-proposal
+- **Full spec:** https://github.com/sweengineeringlabs/a2a-proposal/blob/main/extension/experimental-ext-acceptance/v1/spec.md
+- **Rationale:** https://github.com/sweengineeringlabs/a2a-proposal/blob/main/proposal/proposal.md
 
 This is an **extension proposal** (Proposal Phase, per the [Extension and Binding Governance](https://github.com/a2aproject/A2A/blob/main/docs/topics/extension-and-binding-governance.md)) — not a core-spec change. I'm looking for community feedback and a Maintainer sponsor to incubate it as `experimental-ext-acceptance`.
 
